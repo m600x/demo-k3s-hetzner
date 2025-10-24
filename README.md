@@ -1,0 +1,88 @@
+# High Availability K3s cluster in Hetzner provider
+
+This will spin up a high availability K3s cluster in Hetzner provider composed of 2 servers and 3 agents nodes. It will also provision a load balancer in front of the servers.
+
+## Requirement
+- Docker on your machine (or terraform and ansible installed locally)
+- A Hetzner token with read/write rights
+
+## TL;DR
+- Init
+  ```
+  export TF_VAR_hcloud_token=
+  
+  ./start_controller.sh
+  ```
+- Spawning
+  ```
+  ./scripts/spawn.sh
+  ```
+- Nuke (destroy the cluster and remove local artifacts)
+  ```
+  ./scripts/nuke.sh
+  ```
+- Clean everything (including tfstate! But does not remove remote resources, be aware)
+  ```
+  ./scripts/clean.sh
+  ```
+
+### Cost
+The cost of running the cluster for a full month is **27.41 euros** as of October 2025 if you don't change anything.
+
+Hetzner charge per hour of use, so you can spin up/down as needed. Broken down to (PU for a full month):
+
+|Desc|Unit|PU|Total cost|
+|:-:|---|---|---|
+|Server cx23|5|3.59|17.94|
+|IPv4 lease|5|0.60|3.00|
+|Loadbalancer LB11|1|6.47|6.47|
+
+### Variables
+| Name                              | Type           | Default             | Description                                      |
+| --------------------------------- | -------------- | ------------------- | ------------------------------------------------ |
+| `hcloud_token`                    | `string`       | —                   | **REQUIRED**. Hetzner Cloud API token            |
+| `allowed_ip`                      | `list(string)` | —                   | List of IPs allowed to access the K3s API server |
+|                                   |                |                     | Add your own public IP so you can have access.   |
+| `k3s_version`                     | `string`       | `v1.34.1+k3s1`      | Version of K3s to install                        |
+| `k3s_servers_count`               | `number`       | `2`                 | Number of K3s server nodes                       |
+| `k3s_agents_count`                | `number`       | `3`                 | Number of K3s agent nodes                        |
+| `k3s_server_type`                 | `string`       | `cx23`              | Type of compute instance for all nodes           |
+| `k3s_location`                    | `string`       | `fsn1`              | Hetzner datacenter location                      |
+| `k3s_os`                          | `string`       | `debian-13`         | Operating system image used for nodes            |
+| `ssh_keyset`                      | `list(string)` | `[]`                | Additional SSH key names to include in nodes     |
+|                                   |                |                     | if it already exist in Hetzner                   |
+
+
+### Manual execution
+- Add the token to your env
+  ```
+  export TF_VAR_hcloud_token=
+  ```
+- Go to the terraform folder
+  ```
+  cd terraform
+  ```
+- Init terraform
+  ```
+  terraform init
+  ```
+- Deploy the cluster
+  ```
+  terraform apply -auto-approve
+  ```
+- Export ansible inventory from terraform (workaround to be compatible with HCP)
+  ```
+  terraform output -raw ansible_inventory > inventory.ini
+  mkdir -p group_vars
+  terraform output -raw ansible_groupvars_all > group_vars/all.yml
+  terraform output -raw k3s_private_key > k3s.pem
+  chmod 600 k3s.pem
+  ```
+- Install K3s on nodes
+  ```
+  ansible-playbook -i inventory.ini deploy_k3s.yml 
+  ```
+- Test connection
+  ```
+  kubectl --kubeconfig kubeconfig.yaml get nodes
+  ```

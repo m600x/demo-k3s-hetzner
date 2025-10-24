@@ -1,0 +1,11 @@
+
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.backup
+
+ansible/group_vars
+ansible/inventory.ini
+ansible/k3s.pem
+
+kubeconfig.yaml

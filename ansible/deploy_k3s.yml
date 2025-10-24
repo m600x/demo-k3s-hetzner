@@ -1,0 +1,97 @@
+---
+- name: Install K3s cluster
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install dependencies
+      apt:
+        name:
+          - curl
+          - sudo
+        state: present
+        update_cache: yes
+
+- name: Install K3s servers in HA mode
+  hosts: k3s_servers
+  become: yes
+  tasks:
+    - name: Retrieve iface of internal NIC for flannel
+      shell: ip -o addr show | grep '{{ hostvars[inventory_hostname]['private_ip'] }}' | awk '{print $2}'
+      register: internal_nic
+      changed_when: false
+
+    - name: Install first K3s server (bootstrap)
+      when: inventory_hostname == groups['k3s_servers'][0]
+      shell: |
+        curl -sfL https://get.k3s.io | \
+        INSTALL_K3S_VERSION={{ k3s_version }} \
+        K3S_TOKEN={{ k3s_token }} \
+        INSTALL_K3S_EXEC="server \
+        --cluster-init \
+        --node-ip={{ hostvars[inventory_hostname]['private_ip'] }} \
+        --advertise-address={{ hostvars[inventory_hostname]['private_ip'] }} \
+        --tls-san={{ hostvars[inventory_hostname]['private_ip'] }} \
+        --tls-san={{ hostvars[groups['k3s_servers'][0]]['ansible_host'] }} \
+        --tls-san={{ k3s_loadbalancer_ip }} \
+        --flannel-iface={{ internal_nic.stdout }}" \
+        sh -
+
+    - name: Install other K3s servers (join to cluster)
+      when: inventory_hostname != groups['k3s_servers'][0]
+      shell: |
+        curl -sfL https://get.k3s.io | \
+        INSTALL_K3S_VERSION={{ k3s_version }} \
+        K3S_URL={{ k3s_server_url }} \
+        K3S_TOKEN={{ k3s_token }} \
+        INSTALL_K3S_EXEC="server \
+        --server={{ k3s_server_url }}  \
+        --node-ip={{ hostvars[inventory_hostname]['private_ip'] }} \
+        --advertise-address={{ hostvars[inventory_hostname]['private_ip'] }} \
+        --tls-san={{ hostvars[groups['k3s_servers'][0]]['private_ip'] }} \
+        --tls-san={{ hostvars[groups['k3s_servers'][0]]['ansible_host'] }} \
+        --tls-san={{ k3s_loadbalancer_ip }} \
+        --flannel-iface={{ internal_nic.stdout }}" \
+        sh -
+
+- name: Install K3s agents
+  hosts: k3s_agents
+  become: yes
+  tasks:
+    - name: Retrieve iface of internal NIC for flannel
+      shell: ip -o addr show | grep '{{ hostvars[inventory_hostname]['private_ip'] }}' | awk '{print $2}'
+      register: internal_nic
+      changed_when: false
+
+    - name: Install K3s agent
+      shell: |
+        curl -sfL https://get.k3s.io | \
+        INSTALL_K3S_VERSION={{ k3s_version }} \
+        K3S_URL={{ k3s_server_url }} \
+        K3S_TOKEN={{ k3s_token }} \
+        INSTALL_K3S_EXEC="agent \
+        --node-ip={{ hostvars[inventory_hostname]['private_ip'] }} \
+        --flannel-iface={{ internal_nic.stdout }}" \
+        sh -
+
+- name: Retrieve kubeconfig
+  hosts: k3s_servers
+  become: yes
+  tasks:
+    - name: Stop the play if not the master node
+      meta: end_play
+      when: inventory_hostname != groups['k3s_servers'][0]
+
+    - name: Retrieve K3s kubeconfig from first server
+      slurp:
+        src: /etc/rancher/k3s/k3s.yaml
+      register: kubeconfig_b64
+
+    - debug:
+        msg: "{{ (kubeconfig_b64.content | b64decode) }}"
+
+    - name: Write kubeconfig locally
+      copy:
+        content: "{{ (kubeconfig_b64.content | b64decode) | replace('127.0.0.1', k3s_loadbalancer_ip) }}"
+        dest: ./kubeconfig.yaml
+        mode: '0600'
+      delegate_to: localhost
