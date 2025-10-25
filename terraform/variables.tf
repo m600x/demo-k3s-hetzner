@@ -19,7 +19,7 @@ variable "k3s_version" {
 variable "k3s_servers_count" {
   description = "Number of K3s server nodes"
   type        = number
-  default     = 2
+  default     = 3
 }
 
 variable "k3s_agents_count" {

@@ -1,6 +1,6 @@
 # High Availability K3s cluster in Hetzner provider
 
-This will spin up a high availability K3s cluster in Hetzner provider composed of 2 servers and 3 agents nodes. It will also provision a load balancer in front of the servers.
+This will spin up a high availability K3s cluster in Hetzner provider composed of 3 servers (2 doesn't provide quorum) and 3 agents nodes. It will also provision a load balancer in front of the servers.
 
 ## Requirement
 - Docker on your machine (or terraform and ansible installed locally)
@@ -27,19 +27,19 @@ This will spin up a high availability K3s cluster in Hetzner provider composed o
   ```
 
 ### Cost
-The cost of running the cluster for a full month is **27.41 euros** as of October 2025 if you don't change anything.
+The cost of running the cluster for a full month is **31.60 euros** as of October 2025 if you don't change anything.
 
 Hetzner charge per hour of use, so you can spin up/down as needed. Broken down to (PU for a full month):
 
 |Desc|Unit|PU|Total cost|
-|:-:|---|---|---|
-|Server cx23|5|3.59|17.94|
-|IPv4 lease|5|0.60|3.00|
+|:-:|:-:|:-:|:-:|
+|Server cx23|6|3.59|21.53|
+|IPv4 lease|6|0.60|3.60|
 |Loadbalancer LB11|1|6.47|6.47|
 
 ### Variables
 | Name                              | Type           | Default             | Description                                      |
-| --------------------------------- | -------------- | ------------------- | ------------------------------------------------ |
+| --------------------------------- | :-: | :-: | ------------------------------------------------ |
 | `hcloud_token`                    | `string`       | —                   | **REQUIRED**. Hetzner Cloud API token            |
 | `allowed_ip`                      | `list(string)` | —                   | List of IPs allowed to access the K3s API server |
 |                                   |                |                     | Add your own public IP so you can have access.   |
