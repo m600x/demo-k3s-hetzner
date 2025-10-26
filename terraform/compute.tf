@@ -1,19 +1,19 @@
-resource "hcloud_server" "k3s-servers" {
-  count       = var.k3s_servers_count
+resource "hcloud_server" "kube_servers" {
+  count       = var.kube_servers_count
   name        = "kube-server-${count.index + 1}"
-  server_type = var.k3s_server_type
-  image       = var.k3s_os
-  location    = var.k3s_location
+  server_type = var.kube_server_type
+  image       = var.kube_os
+  location    = var.kube_location
   depends_on = [
     hcloud_ssh_key.terraform-ssh-key,
-    hcloud_network_subnet.k3s-network-subnet-servers
+    hcloud_network_subnet.kube_subnet_servers
   ]
   ssh_keys     = concat([var.terraform_ssh_key_name], var.ssh_keyset)
-  firewall_ids = [hcloud_firewall.k3s-firewall.id]
+  firewall_ids = [hcloud_firewall.kube_firewall.id]
 
   network {
-    network_id = hcloud_network.k3s-network.id
-    ip         = "${var.k3s_network_subnet_part_servers}.${count.index + 1}"
+    network_id = hcloud_network.kube_network.id
+    ip         = "${var.kube_subnet_prefix_servers}.${count.index + 1}"
   }
 
   public_net {
@@ -22,22 +22,22 @@ resource "hcloud_server" "k3s-servers" {
   }
 }
 
-resource "hcloud_server" "k3s-workers" {
-  count       = var.k3s_workers_count
+resource "hcloud_server" "kube_workers" {
+  count       = var.kube_workers_count
   name        = "kube-worker-${count.index + 1}"
-  server_type = var.k3s_server_type
-  image       = var.k3s_os
-  location    = var.k3s_location
+  server_type = var.kube_server_type
+  image       = var.kube_os
+  location    = var.kube_location
   depends_on = [
     hcloud_ssh_key.terraform-ssh-key,
-    hcloud_network_subnet.k3s-network-subnet-workers
+    hcloud_network_subnet.kube_subnet_workers
   ]
   ssh_keys     = concat([var.terraform_ssh_key_name], var.ssh_keyset)
-  firewall_ids = [hcloud_firewall.k3s-firewall.id]
+  firewall_ids = [hcloud_firewall.kube_firewall.id]
 
   network {
-    network_id = hcloud_network.k3s-network.id
-    ip         = "${var.k3s_network_subnet_part_workers}.${count.index + 1}"
+    network_id = hcloud_network.kube_network.id
+    ip         = "${var.kube_subnet_prefix_workers}.${count.index + 1}"
   }
 
   public_net {

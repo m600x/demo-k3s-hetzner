@@ -1,6 +1,6 @@
-# High Availability K3s cluster in Hetzner provider
+# High Availability Kubernetes cluster in Hetzner provider
 
-This will spin up a high availability K3s cluster in Hetzner provider composed of 3 servers (2 doesn't provide quorum) and 3 workers nodes. It will also provision a load balancer in front of the servers.
+This will spin up a high availability Kubernetes cluster in Hetzner provider composed of 3 servers (2 doesn't provide quorum) and 3 workers nodes. It will also provision a load balancer in front of the servers.
 
 ## Requirement
 - Docker on your machine (or terraform and ansible installed locally)
@@ -17,13 +17,13 @@ This will spin up a high availability K3s cluster in Hetzner provider composed o
   ```
   ./scripts/create_cluster.sh
   ```
-- Install kuberneters
+- Install kubernetes
   ```
   ./scripts/install_k3s.sh
   ```
 - Nuke (destroy the cluster and remove local artifacts)
   ```
-  ./scripts/nuke.sh
+  ./scripts/destroy_cluster.sh
   ```
 - Clean everything (including tfstate! But does not remove remote resources, be aware)
   ```
@@ -45,14 +45,14 @@ Hetzner charge per hour of use, so you can spin up/down as needed. Broken down t
 | Name                              | Type           | Default             | Description                                      |
 | --------------------------------- | :-: | :-: | ------------------------------------------------ |
 | `hcloud_token`                    | `string`       | —                   | **REQUIRED**. Hetzner Cloud API token            |
-| `allowed_ip`                      | `list(string)` | —                   | List of IPs allowed to access the K3s API server |
+| `allowed_ip`                      | `list(string)` | —                   | List of IPs allowed to access the API serve.   r |
 |                                   |                |                     | Add your own public IP so you can have access.   |
 | `k3s_version`                     | `string`       | `v1.34.1+k3s1`      | Version of K3s to install                        |
-| `k3s_servers_count`               | `number`       | `2`                 | Number of K3s server nodes                       |
-| `k3s_workers_count`               | `number`       | `3`                 | Number of K3s workers nodes                      |
-| `k3s_server_type`                 | `string`       | `cx23`              | Type of compute instance for all nodes           |
-| `k3s_location`                    | `string`       | `fsn1`              | Hetzner datacenter location                      |
-| `k3s_os`                          | `string`       | `debian-13`         | Operating system image used for nodes            |
+| `kube_servers_count`              | `number`       | `3`                 | Number of Kubernetes server nodes                |
+| `kube_workers_count`              | `number`       | `3`                 | Number of Kubernetes workers nodes               |
+| `kube_server_type`                | `string`       | `cx23`              | Type of compute instance for all nodes           |
+| `kube_location`                   | `string`       | `fsn1`              | Hetzner datacenter location                      |
+| `kube_os`                         | `string`       | `debian-13`         | Operating system image used for nodes            |
 | `ssh_keyset`                      | `list(string)` | `[]`                | Additional SSH key names to include in nodes     |
 |                                   |                |                     | if it already exist in Hetzner                   |
 
@@ -79,7 +79,7 @@ Hetzner charge per hour of use, so you can spin up/down as needed. Broken down t
   terraform output -raw ansible_inventory > inventory.ini
   mkdir -p group_vars
   terraform output -raw ansible_groupvars_all > group_vars/all.yml
-  terraform output -raw k3s_private_key > ssh_private_key.pem
+  terraform output -raw kube_private_key > ssh_private_key.pem
   chmod 600 ssh_private_key.pem
   ```
 - Install K3s on nodes

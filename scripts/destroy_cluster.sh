@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "-------------------------------"
-echo "Launching Terraform to destroy Hetzner K3s cluster..."
+echo "Launching Terraform to destroy the cluster..."
 echo "-------------------------------"
 
 cd terraform

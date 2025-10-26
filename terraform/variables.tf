@@ -5,7 +5,7 @@ variable "hcloud_token" {
 }
 
 variable "allowed_ip" {
-  description = "IP address allowed to access the K3s API server"
+  description = "IP address allowed to access the Kubernetes API server"
   type        = list(string)
   sensitive   = true
 }
@@ -16,31 +16,31 @@ variable "k3s_version" {
   default     = "v1.34.1+k3s1"
 }
 
-variable "k3s_servers_count" {
-  description = "Number of K3s server nodes"
+variable "kube_servers_count" {
+  description = "Number of Kubernetes server nodes"
   type        = number
   default     = 3
 }
 
-variable "k3s_workers_count" {
-  description = "Number of K3s worker nodes"
+variable "kube_workers_count" {
+  description = "Number of Kubernetes worker nodes"
   type        = number
   default     = 3
 }
 
-variable "k3s_server_type" {
+variable "kube_server_type" {
   description = "Compute resource type"
   type        = string
   default     = "cx23"
 }
 
-variable "k3s_location" {
+variable "kube_location" {
   description = "Datacenter location"
   type        = string
   default     = "fsn1"
 }
 
-variable "k3s_os" {
+variable "kube_os" {
   description = "Operating system image"
   type        = string
   default     = "debian-13"
@@ -52,20 +52,20 @@ variable "terraform_ssh_key_name" {
   default     = "terraform-ssh-key"
 }
 
-variable "k3s_network_subnet_part_common" {
-  description = "Subnet part for common network"
+variable "kube_subnet_prefix_common" {
+  description = "Subnet prefix for common network"
   type        = string
   default     = "10.0.1"
 }
 
-variable "k3s_network_subnet_part_servers" {
-  description = "Subnet part for servers network"
+variable "kube_subnet_prefix_servers" {
+  description = "Subnet prefix for servers network"
   type        = string
   default     = "10.0.2"
 }
 
-variable "k3s_network_subnet_part_workers" {
-  description = "Subnet part for workers network"
+variable "kube_subnet_prefix_workers" {
+  description = "Subnet prefix for workers network"
   type        = string
   default     = "10.0.3"
 }

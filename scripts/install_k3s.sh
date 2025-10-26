@@ -5,7 +5,7 @@ echo "-------------------------------"
 echo "Launching Ansible to create the K3s cluster..."
 echo "-------------------------------"
 
-cd ../ansible
+cd ansible
 ansible-playbook -i inventory.ini deploy_k3s.yml
 if [ -f /.dockerenv ]; then
     mkdir -p /root/.kube

@@ -25,7 +25,7 @@ resource "hcloud_ssh_key" "terraform-ssh-key" {
   public_key = tls_private_key.terraform-ssh-key.public_key_openssh
 }
 
-resource "random_string" "k3s_token" {
+resource "random_string" "kube_token" {
   length  = 64
   special = false
 }
