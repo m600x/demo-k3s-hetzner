@@ -17,11 +17,11 @@ resource "hcloud_network_subnet" "k3s-network-subnet-servers" {
   ip_range     = "${var.k3s_network_subnet_part_servers}.0/24"
 }
 
-resource "hcloud_network_subnet" "k3s-network-subnet-agents" {
+resource "hcloud_network_subnet" "k3s-network-subnet-workers" {
   type         = "cloud"
   network_id   = hcloud_network.k3s-network.id
   network_zone = "eu-central"
-  ip_range     = "${var.k3s_network_subnet_part_agents}.0/24"
+  ip_range     = "${var.k3s_network_subnet_part_workers}.0/24"
 }
 
 resource "hcloud_firewall" "k3s-firewall" {
@@ -107,7 +107,7 @@ resource "hcloud_firewall_attachment" "k3s-firewall-attachment" {
   firewall_id = hcloud_firewall.k3s-firewall.id
   server_ids = concat(
     [for s in hcloud_server.k3s-servers : s.id],
-    [for s in hcloud_server.k3s-agents : s.id]
+    [for s in hcloud_server.k3s-workers : s.id]
   )
 }
 
@@ -120,8 +120,8 @@ resource "hcloud_load_balancer" "k3s_lb" {
 resource "hcloud_load_balancer_network" "k3s_lb_network" {
   load_balancer_id = hcloud_load_balancer.k3s_lb.id
   network_id       = hcloud_network.k3s-network.id
-  ip = "${var.k3s_network_subnet_part_common}.1"
-  depends_on = [hcloud_network_subnet.k3s-network-subnet-common]
+  ip               = "${var.k3s_network_subnet_part_common}.1"
+  depends_on       = [hcloud_network_subnet.k3s-network-subnet-common]
 }
 
 resource "hcloud_load_balancer_service" "k3s_lb_service" {

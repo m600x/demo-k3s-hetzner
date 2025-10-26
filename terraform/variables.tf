@@ -22,8 +22,8 @@ variable "k3s_servers_count" {
   default     = 3
 }
 
-variable "k3s_agents_count" {
-  description = "Number of K3s agent nodes"
+variable "k3s_workers_count" {
+  description = "Number of K3s worker nodes"
   type        = number
   default     = 3
 }
@@ -64,8 +64,8 @@ variable "k3s_network_subnet_part_servers" {
   default     = "10.0.2"
 }
 
-variable "k3s_network_subnet_part_agents" {
-  description = "Subnet part for agents network"
+variable "k3s_network_subnet_part_workers" {
+  description = "Subnet part for workers network"
   type        = string
   default     = "10.0.3"
 }

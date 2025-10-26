@@ -53,8 +53,8 @@
         --flannel-iface={{ internal_nic.stdout }}" \
         sh -
 
-- name: Install K3s agents
-  hosts: k3s_agents
+- name: Install K3s workers
+  hosts: k3s_workers
   become: yes
   tasks:
     - name: Retrieve iface of internal NIC for flannel
@@ -86,12 +86,10 @@
         src: /etc/rancher/k3s/k3s.yaml
       register: kubeconfig_b64
 
-    - debug:
-        msg: "{{ (kubeconfig_b64.content | b64decode) }}"
-
     - name: Write kubeconfig locally
       copy:
         content: "{{ (kubeconfig_b64.content | b64decode) | replace('127.0.0.1', k3s_loadbalancer_ip) }}"
         dest: ./kubeconfig.yaml
         mode: '0600'
       delegate_to: localhost
+      no_log: true

@@ -6,6 +6,6 @@
 
 ansible/group_vars
 ansible/inventory.ini
-ansible/k3s.pem
+ansible/ssh_private_key.pem
 
 kubeconfig.yaml
